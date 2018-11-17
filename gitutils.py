@@ -5,9 +5,9 @@ class InShellGitUtility:
     __DEFAULT_EDITOR = '"vim"'
     __PREVIOUS_EDITOR = __DEFAULT_EDITOR    
 
-    def makeBackupBranch(self):
-        self.__makeShellCall(['git', 'branch', '-D', 'autosquash_save_branch'])
-        output = self.__makeShellCall(['git', 'branch', 'autosquash_save_branch'])
+    def makeBackupBranch(self, branch_name):
+        self.__makeShellCall(['git', 'branch', '-D', branch_name])
+        output = self.__makeShellCall(['git', 'branch', branch_name])
         error_info = str(output[1])[2:-1]
         if (len(error_info) > 1):
             return False

@@ -3,6 +3,7 @@ from gitutils import InShellGitUtility, LogEntry
 
 AUTO_SEQUENCE_EDITOR = '"sed -i -e \'1 ! s/pick/pick/g\'"'
 REBASE_SUCCESS_MESSAGE = "Successfully rebased and updated "
+BACKUP_BRANCH_NAME = "autosquash_save_branch"
 PREFIX = "\n    "
 
 git_utility = InShellGitUtility()
@@ -23,7 +24,13 @@ def sanitizeBranchName(branch_name):
 
 def consolePrint(message):
     print(PREFIX + message)
-  
+
+def makeBackupBranch():
+    backup_branch_success = git_utility.makeBackupBranch(BACKUP_BRANCH_NAME)
+    if (not backup_branch_success):
+        return False
+    return True
+    
         
 if __name__ == '__main__':
     os.chdir("C:\\dummy-repo")
@@ -37,15 +44,14 @@ if __name__ == '__main__':
         consolePrint("error message about log parsing")
         exit()
     
-    backup_branch_success = git_utility.makeBackupBranch()
-    if (not backup_branch_success):
-        consolePrint("error message about backup branch creation")
+    if (not makeBackupBranch()):
+        consolePrint('error message about backup branch creation')
         exit()
+    consolePrint("successfully made backup branch: " + BACKUP_BRANCH_NAME) 
     
     git_utility.setSequenceEditor(AUTO_SEQUENCE_EDITOR)
     rebase_info = git_utility.rebaseWithHeadOffset(squash_count)
     git_utility.revertSequenceEditor()
-    
     
     if (rebase_info[:len(REBASE_SUCCESS_MESSAGE)] == REBASE_SUCCESS_MESSAGE):
         consolePrint("rebase successful!")
@@ -53,9 +59,3 @@ if __name__ == '__main__':
     else:
         consolePrint("couldn't rebase successfully")
         exit()
-        
-#todo:
-#   better error logging
-#   increased count accuracy without sacrificing robustness
-#   refactor some of the code to be less janky
-#   maybe make another abstraction layer between InShellGitEditor and the subprocess module?
