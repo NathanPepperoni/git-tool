@@ -1,24 +1,61 @@
-import subprocess, os
+import sys, subprocess, os
 from gitutils import InShellGitUtility, LogEntry
 
 AUTO_SEQUENCE_EDITOR = '"sed -i -e \'1 ! s/pick/pick/g\'"'
+REBASE_SUCCESS_MESSAGE = "Successfully rebased and updated "
+PREFIX = "\n    "
 
 git_utility = InShellGitUtility()
 
-def getHeadCount():
+def getSquashCount():
+    branch_name = sanitizeBranchName(git_utility.getCurrentBranchName())
+    count = 0
     log_entries = git_utility.getLogEntries()
-    
+    for entry in log_entries:
+        count+=1
+        message_before_whitespace = entry.commit_message.split()[0]
+        if (message_before_whitespace.lower().count(branch_name)):
+            return count
+    return -1
         
+def sanitizeBranchName(branch_name):
+    return branch_name.lower().replace("feature/", '')
 
-os.chdir("C:\\dummy-repo")
-
-print(git_utility.getCurrentBranchName())
-
-#getHeadCount
-#try to make safety branch
-#change editor
-#rebase
-#revert editor
-#check for issues
-#output to user
-
+def consolePrint(message):
+    print(PREFIX + message)
+  
+        
+if __name__ == '__main__':
+    os.chdir("C:\\dummy-repo")
+    
+    if (sys.version_info[0] < 3):
+        consolePrint("This script only works with python version 3")
+        exit()
+    
+    squash_count = getSquashCount()
+    if (squash_count < 0):
+        consolePrint("error message about log parsing")
+        exit()
+    
+    backup_branch_success = git_utility.makeBackupBranch()
+    if (not backup_branch_success):
+        consolePrint("error message about backup branch creation")
+        exit()
+    
+    git_utility.setSequenceEditor(AUTO_SEQUENCE_EDITOR)
+    rebase_info = git_utility.rebaseWithHeadOffset(squash_count)
+    git_utility.revertSequenceEditor()
+    
+    
+    if (rebase_info[:len(REBASE_SUCCESS_MESSAGE)] == REBASE_SUCCESS_MESSAGE):
+        consolePrint("rebase successful!")
+        exit()
+    else:
+        consolePrint("couldn't rebase successfully")
+        exit()
+        
+#todo:
+#   better error logging
+#   increased count accuracy without sacrificing robustness
+#   refactor some of the code to be less janky
+#   maybe make another abstraction layer between InShellGitEditor and the subprocess module?

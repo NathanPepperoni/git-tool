@@ -30,7 +30,6 @@ class InShellGitUtility:
         log_entries = []
         output = self.__makeShellCall(["git", "log"])
         trimmed_output = str(output[0])[9:-1]
-        
         for log_entry in trimmed_output.split('\\ncommit '):
             if (self.__isValidLogEntry(log_entry)):
                 log_entries.append(self.__createLogEntry(log_entry))
@@ -72,6 +71,11 @@ class InShellGitUtility:
     def getCurrentBranchName(self):
         output = str(self.__makeShellCall(['git', 'symbolic-ref', '--short', 'HEAD'])[0])
         return output[2:-3]
+    
+    def rebaseWithHeadOffset(self, head_offset):
+        output = self.__makeShellCall(['git', 'rebase', '-i', 'HEAD~' + str(head_offset)])
+        rebase_info = str(output[1])[2:-1]
+        return rebase_info
     
     def __makeShellCall(self, call):
         process = subprocess.Popen(call, stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True)
