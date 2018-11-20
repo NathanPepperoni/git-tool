@@ -1,7 +1,8 @@
 import sys, subprocess, os
 from gitutils import InShellGitUtility, LogEntry
 
-AUTO_SEQUENCE_EDITOR = '"sed -i -e \'1 ! s/pick/pick/g\'"'
+MOCK_AUTO_SEQUENCE_EDITOR = '"sed -i -e \'1 ! s/pick/pick/g\'"'
+AUTO_SEQUENCE_EDITOR = '"sed -i -e \'1 ! s/pick/fixup/g\'"'
 REBASE_SUCCESS_MESSAGE = "Successfully rebased and updated "
 BACKUP_BRANCH_NAME = "autosquash_save_branch"
 PREFIX = "\n    "
@@ -37,25 +38,25 @@ if __name__ == '__main__':
     
     if (sys.version_info[0] < 3):
         consolePrint("This script only works with python version 3")
-        exit()
+        raise SystemExit()
     
     squash_count = getSquashCount()
     if (squash_count < 0):
         consolePrint("error message about log parsing")
-        exit()
+        raise SystemExit()
     
     if (not makeBackupBranch()):
         consolePrint('error message about backup branch creation')
-        exit()
+        raise SystemExit()
     consolePrint("successfully made backup branch: " + BACKUP_BRANCH_NAME) 
     
-    git_utility.setSequenceEditor(AUTO_SEQUENCE_EDITOR)
+    git_utility.setSequenceEditor(MOCK_AUTO_SEQUENCE_EDITOR)
     rebase_info = git_utility.rebaseWithHeadOffset(squash_count)
     git_utility.revertSequenceEditor()
     
     if (rebase_info[:len(REBASE_SUCCESS_MESSAGE)] == REBASE_SUCCESS_MESSAGE):
         consolePrint("rebase successful!")
-        exit()
+        raise SystemExit()
     else:
         consolePrint("couldn't rebase successfully")
-        exit()
+        raise SystemExit()
