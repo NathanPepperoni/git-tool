@@ -3,9 +3,9 @@ from gitutils import InShellGitUtility, LogEntry
 
 MOCK_AUTO_SEQUENCE_EDITOR = '"sed -i -e \'1 ! s/pick/pick/g\'"'
 AUTO_SEQUENCE_EDITOR = '"sed -i -e \'1 ! s/pick/fixup/g\'"'
-REBASE_SUCCESS_MESSAGE = "Successfully rebased and updated "
-BACKUP_BRANCH_NAME = "autosquash_save_branch"
-PREFIX = "\n    "
+REBASE_SUCCESS_MESSAGE = 'Successfully rebased and updated '
+BACKUP_BRANCH_NAME = 'autosquash_save_branch'
+PREFIX = '\n    '
 
 git_utility = InShellGitUtility()
 
@@ -21,7 +21,7 @@ def getSquashCount():
     return -1
         
 def sanitizeBranchName(branch_name):
-    return branch_name.lower().replace("feature/", '')
+    return branch_name.lower().replace('feature/', '').replace('fix/', '')
 
 def consolePrint(message):
     print(PREFIX + message)
@@ -31,32 +31,30 @@ def makeBackupBranch():
     if (not backup_branch_success):
         return False
     return True
-    
         
-if __name__ == '__main__':
-    os.chdir("C:\\dummy-repo")
-    
+if __name__ == '__main__':    
     if (sys.version_info[0] < 3):
-        consolePrint("This script only works with python version 3")
+        consolePrint('This script only works with python version 3')
         raise SystemExit()
     
     squash_count = getSquashCount()
     if (squash_count < 0):
-        consolePrint("error message about log parsing")
+        consolePrint('error message about log parsing')
         raise SystemExit()
     
     if (not makeBackupBranch()):
         consolePrint('error message about backup branch creation')
         raise SystemExit()
-    consolePrint("successfully made backup branch: " + BACKUP_BRANCH_NAME) 
+    consolePrint('successfully made backup branch: ' + BACKUP_BRANCH_NAME) 
     
-    git_utility.setSequenceEditor(MOCK_AUTO_SEQUENCE_EDITOR)
+    git_utility.setSequenceEditor(AUTO_SEQUENCE_EDITOR)
     rebase_info = git_utility.rebaseWithHeadOffset(squash_count)
     git_utility.revertSequenceEditor()
     
-    if (rebase_info[:len(REBASE_SUCCESS_MESSAGE)] == REBASE_SUCCESS_MESSAGE):
-        consolePrint("rebase successful!")
+    if (rebase_info.find(REBASE_SUCCESS_MESSAGE) >= 0):
+        consolePrint('rebase successful!')
         raise SystemExit()
     else:
-        consolePrint("couldn't rebase successfully")
+        consolePrint('couldn\'t rebase successfully')
+        consolePrint(rebase_info)
         raise SystemExit()
