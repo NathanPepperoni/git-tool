@@ -4,6 +4,10 @@ class InShellGitUtility:
     
     __DEFAULT_EDITOR = '"vim"'
     __PREVIOUS_EDITOR = __DEFAULT_EDITOR    
+    
+    def makeQuickCommit(self, add_scope):
+        self.__makeShellCall(['git', 'add', add_scope])
+        self.__makeShellCall(['git', 'commit', '-m', '"s"'])
 
     def makeBackupBranch(self, branch_name):
         self.__makeShellCall(['git', 'branch', '-D', branch_name])
