@@ -5,6 +5,14 @@ class InShellGitUtility:
     __DEFAULT_EDITOR = '"vim"'
     __PREVIOUS_EDITOR = __DEFAULT_EDITOR    
     
+    def cloneBranch(self, repo_url, branchname):
+        self.__makeShellCall(['git', 'clone', repo_url])
+        repo_name= repo_url.split('/')[-1].replace('.git','')
+        os.chdir(repo_name)
+        output = self.__makeShellCall(['git', 'checkout', branchname])
+        is_valid_output = output[1][:10].decode("utf-8") == "Already on" or output[1].decode("utf-8") == "Switched to a new branch '" + branchname + "'\n"
+        return is_valid_output
+    
     def makeQuickCommit(self, add_scope):
         self.__makeShellCall(['git', 'add', add_scope])
         self.__makeShellCall(['git', 'commit', '-m', '"s"'])
