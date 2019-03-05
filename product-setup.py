@@ -58,20 +58,30 @@ def validateAndPopulateArgs():
         global __BRANCH
         __BRANCH = 'Ares-STP'       
         
-def downloadTarget():
+def retrieveAuthToken():
     credentials = ('%s:%s' % (input('username: '), getPass('password: ')))
-    auth_token = base64.b64encode(credentials.encode('ascii')).decode('ascii')
-
-    data = fetchURL(__URL, auth_token)
+    return base64.b64encode(credentials.encode('ascii')).decode('ascii')    
     
-    target_name = fetch_target_name(data.decode("utf8"))
+def downloadTarget():
+    auth_token = retrieveAuthToken()
     
-    with open(target_name, 'wb') as output_file:
-        target = fetchURL(__URL+target_name, auth_token)
-        output_file.write(target)
-    print(target_name + " downloaded!")       
+    try:
+        data = fetchURL(__URL, auth_token)
+        print("Authentication successful. Fetching target...", flush=True)
+        target_name = fetch_target_name(data.decode("utf8"))
+        with open(target_name, 'wb') as output_file:
+            target = fetchURL(__URL+target_name, auth_token)
+            output_file.write(target)
+            print(target_name + " downloaded!", flush=True)   
+            
+    except urllib.error.HTTPError as err:
+        if (err.code == 401):
+            print('invalid password or username. Please try again.\n')
+            downloadTarget()
+             
    
 def cloneProduct():
+    print("cloning product...", flush=True)
     if (git_utility.cloneBranch(__PRODUCT, __BRANCH)):
         print('product cloned!')
 
