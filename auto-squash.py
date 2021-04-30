@@ -1,8 +1,8 @@
 import sys, subprocess, os
 from gitutils import InShellGitUtility, LogEntry
 
-MOCK_AUTO_SEQUENCE_EDITOR = '"sed -i -e \'1 ! s/pick/pick/g\'"'
-AUTO_SEQUENCE_EDITOR = '"sed -i -e \'1 ! s/pick/fixup/g\'"'
+MOCK_AUTO_SEQUENCE_EDITOR = "sed -i -e \'1 ! s/pick/pick/g\'"
+AUTO_SEQUENCE_EDITOR = "sed -i -e \'1 ! s/pick/fixup/g\'"
 REBASE_SUCCESS_MESSAGE = 'Successfully rebased and updated '
 BACKUP_BRANCH_NAME = 'autosquash_save_branch'
 PREFIX = '\n    '
@@ -14,19 +14,22 @@ git_utility = InShellGitUtility()
 
 def getSquashCount():
     branch_name = sanitizeBranchName(git_utility.getCurrentBranchName())
+    consolePrint(branch_name)
     count = 0
     log_entries = git_utility.getLogEntries()
 
     for entry in log_entries:
         count+=1
         message_before_whitespace = entry.commit_message.split()[0]
-        if (message_before_whitespace.lower().count(branch_name)):
+        if (message_before_whitespace == branch_name):
             return count
-    consolePrint('error message about log parsing')
+    consolePrint('Unable to find commit to squash into. Aborting.')
     raise SystemExit()
         
 def sanitizeBranchName(branch_name):
-    return branch_name.lower().replace('feature/', '').replace('fix/', '')
+    name_chunks = branch_name.split('-')
+    sanitized_name = '-'
+    return sanitized_name.join(name_chunks[0:2]) 
 
 def consolePrint(message):
     print(PREFIX + message)
@@ -35,7 +38,7 @@ def makeBackupBranch():
     backup_branch_success = git_utility.makeBackupBranch(BACKUP_BRANCH_NAME)
     
     if (not backup_branch_success):
-        consolePrint('error message about backup branch creation')
+        consolePrint('Could not create backup branch. Aborting.')
         raise SystemExit()
     consolePrint('successfully made backup branch: ' + BACKUP_BRANCH_NAME)  
 

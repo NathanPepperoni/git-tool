@@ -27,13 +27,13 @@ class InShellGitUtility:
     
     def setSequenceEditor(self, sequence_editor):
         self.__PREVIOUS_EDITOR = self.getCurrentEditor()
-        self.__makeShellCall(['git', 'config', 'sequence.editor', [sequence_editor]])
+        self.__makeShellCall(['git', 'config', 'sequence.editor', sequence_editor])
         
     def revertSequenceEditor(self):
         if (self.__PREVIOUS_EDITOR == "UNSET"):
             self.__unsetSequenceEditor()
         else:
-            self.__makeShellCall(['git', 'config', 'sequence.editor', [self.__PREVIOUS_EDITOR]])
+            self.__makeShellCall(['git', 'config', 'sequence.editor', self.__PREVIOUS_EDITOR])
 
     def __unsetSequenceEditor(self):
         self.__makeShellCall(['git', 'config', '--unset', 'sequence.editor'])                
