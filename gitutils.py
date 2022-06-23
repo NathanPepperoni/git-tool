@@ -50,10 +50,13 @@ class InShellGitUtility:
     def __isValidLogEntry(self, log_entry):
         commit_hash = log_entry.split('\\n')[0]
         if (len(commit_hash) != 40):
+            print("bad hash")
             return False
         if (log_entry.count("Author: ") == 0):
+            print("bad author")
             return False
         if (log_entry.count("Date: ") == 0):
+            print("bad date")
             return False
         return True
     

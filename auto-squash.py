@@ -14,14 +14,16 @@ git_utility = InShellGitUtility()
 
 def getSquashCount():
     branch_name = sanitizeBranchName(git_utility.getCurrentBranchName())
-    consolePrint(branch_name)
     count = 0
     log_entries = git_utility.getLogEntries()
-
     for entry in log_entries:
         count+=1
-        message_before_whitespace = entry.commit_message.split()[0]
+        message_chunks = entry.commit_message.replace(' ', '-').split('-');
+        if (len(message_chunks) < 2):
+            continue
+        message_before_whitespace = message_chunks[0] + '-' + message_chunks[1]
         if (message_before_whitespace == branch_name):
+            consolePrint('Identified base commit: ' + str(entry.commit_message))
             return count
     consolePrint('Unable to find commit to squash into. Aborting.')
     raise SystemExit()
@@ -36,7 +38,6 @@ def consolePrint(message):
 
 def makeBackupBranch():
     backup_branch_success = git_utility.makeBackupBranch(BACKUP_BRANCH_NAME)
-    
     if (not backup_branch_success):
         consolePrint('Could not create backup branch. Aborting.')
         raise SystemExit()
